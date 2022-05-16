@@ -18,7 +18,7 @@ def main():
 
     x = {'1':1, '2':2, '3':3}
     dick(x)
-    print(x)
+    print(x.values())
 
     # t = 1450033030
     # t0 = datetime.date.fromtimestamp(t)
@@ -29,7 +29,7 @@ def main():
 
 def dick(y):
     for i in y.keys():
-        y[i] = y[i]+1
+        y[i] = y[i] + 1
 
     print(f'dicky: {y}')
 

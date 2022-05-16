@@ -16,5 +16,5 @@ class Straddle:
 
 
 class DaysOptions:
-    def __init__(self, expDate: int, straddles: []):
+    def __init__(self, expDate: int, straddles: [Straddle]):
         self.expDate, self.straddles = expDate, straddles
