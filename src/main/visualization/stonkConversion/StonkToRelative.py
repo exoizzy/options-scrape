@@ -5,7 +5,7 @@ from models import Option
 from models import RelativeModels
 import datetime
 
-hid = 24
+hid = 8
 mih = 60
 
 
@@ -19,7 +19,7 @@ def getOIandVolFromDaysOpt(dopt: DaysOptions):
         strike: float = strad.strike
         if c is not None:
             coi.update(
-                {strike: c.oi}
+                {strike: c.oi} # (c.oi if (p is None or p.oi > c.oi) else c.oi - p.oi)}
             )
 
             cvol.update(
@@ -27,7 +27,7 @@ def getOIandVolFromDaysOpt(dopt: DaysOptions):
             )
         if p is not None:
             poi.update(
-                {strike: p.oi}
+                {strike: p.oi} # (p.oi if (c is None or c.oi > p.oi) else p.oi - c.oi)}
             )
             pvol.update(
                 {strike: p.volume}
@@ -69,4 +69,4 @@ def relativeDeltaToMin(timed: datetime.timedelta):
 
 def relativeX(rabArr, maxB, te):
     for i in rabArr.keys():
-        rabArr[i] = (rabArr[i]/maxB)*te
+        rabArr[i] = (rabArr[i]/maxB)*(-te)

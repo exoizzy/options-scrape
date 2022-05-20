@@ -13,31 +13,89 @@ from models import Stonk
 
 def main():
     ticker = 'SPY'
-    yfi = YahooFinanceInterface(ticker)
-    stonk = yfi.get_stonk()
+    fn = 'SPY_2022-05-20_test-05202022_stonk.json'
+    # yfi = YahooFinanceInterface(ticker)
+    # stonk = yfi.get_stonk()
+    #
+    # if stonk is not None:
+    #     fn = FileUtility.saveStonkToJsonFile(stonk, 'test-05202022')
+    #
+    #     ftstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, fn)
+    #
+    #     rel = StonkToRelative.daysOptionsToRelative(ftstonk.options[0], ftstonk.lastOpen)
+    #
+    #     fig = go.Figure()
+    #     fig.add_trace(
+    #         go.Scatter(x=list(rel.callVol.values()), y=list(rel.callVol.keys()),
+    #                    mode='lines',
+    #                    name='callVol')
+    #     )
+    #     fig.add_trace(
+    #         go.Scatter(x=list(rel.putVol.values()), y=list(rel.putVol.keys()),
+    #                    mode='lines',
+    #                    name='putVol')
+    #     )
+    #
+    #     fig.show()
+    # else:
+    #     print('stonk is none :( \n')
+    barmode=['relative', 'stack', 'group', 'overlay']
+    baropacity = 0.75
+    orientation = 'v' # 'h'
+    linewidth = 3
+    red = 'firebrick'
+    blue = 'royalblue'
 
-    if stonk is not None:
-        filename = FileUtility.saveStonkToJsonFile(stonk, 'test-05202022')
+    ftstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, fn)
 
-        ftstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, filename)
+    rel = StonkToRelative.daysOptionsToRelative(ftstonk.options[0], ftstonk.lastOpen)
 
-        rel = StonkToRelative.daysOptionsToRelative(ftstonk.options[0], ftstonk.lastOpen)
+    fig = go.Figure()
 
-        fig = go.Figure()
-        fig.add_trace(
-            go.Scatter(x=list(rel.callVol.keys()), y=list(rel.callVol.values()),
-                       mode='lines',
-                       name='callVol')
+    # lines
+    fig.add_trace(
+        go.Scatter(y=list(rel.callVol.values()), x=list(rel.callVol.keys()),
+                   mode='lines',
+                   name='callVol',
+                   line=dict(color=red, width=linewidth)
         )
-        fig.add_trace(
-            go.Scatter(x=list(rel.putVol.keys()), y=list(rel.putVol.values()),
-                       mode='lines',
-                       name='putVol')
-        )
+    )
 
-        fig.show()
-    else:
-        print('stonk is none :( \n')
+    fig.add_trace(
+        go.Scatter(y=list(rel.putVol.values()), x=list(rel.putVol.keys()),
+                   mode='lines',
+                   name='putVol',
+                   line=dict(color=blue, width=linewidth)
+        )
+    )
+
+    # bars
+    fig.add_trace(
+        go.Bar(
+            name='callOI',
+            y=list(rel.callOI.values()),
+            x=list(rel.callOI.keys()),
+            orientation=orientation,
+            marker=dict(color=red),
+            opacity=baropacity
+        )
+    )
+    fig.add_trace(
+        go.Bar(
+            name='putOI',
+            y=list(rel.putOI.values()),
+            x=list(rel.putOI.keys()),
+            orientation=orientation,
+            marker=dict(color=blue),
+            opacity=baropacity
+        )
+    )
+
+    fig.update_layout(title='relative with old oi calcs', xaxis_title='vol && oi (value/max as % of time to expiry)',
+                      yaxis_title='strike price ($)', barmode=barmode[0] #, xaxis=dict(categoryorder='total descending')
+    )
+
+    fig.show()
 
 
     # x = {'1':1, '2':2, '3':3}

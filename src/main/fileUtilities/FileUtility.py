@@ -93,6 +93,7 @@ def importStonkFromJsonFile(ticker, filename):
 
     try:
         if os.path.exists(fp):
+            print(f'importing stonk obj from {fp}')
             with open(fp, opentype) as f:
                 stonk = json.load(f, object_hook=lambda d: SimpleNamespace(**d))
                 f.close()
