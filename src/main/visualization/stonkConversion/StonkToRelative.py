@@ -17,18 +17,21 @@ def getOIandVolFromDaysOpt(dopt: DaysOptions):
         c: Option = strad.call
         p: Option = strad.put
         strike: float = strad.strike
-        coi.update(
-            {strike: c.oi}
-        )
-        poi.update(
-            {strike: p.oi}
-        )
-        cvol.update(
-            {strike: c.volume}
-        )
-        pvol.update(
-            {strike: p.volume}
-        )
+        if c is not None:
+            coi.update(
+                {strike: c.oi}
+            )
+
+            cvol.update(
+                {strike: c.volume}
+            )
+        if p is not None:
+            poi.update(
+                {strike: p.oi}
+            )
+            pvol.update(
+                {strike: p.volume}
+            )
 
     return coi, poi, cvol, pvol
 

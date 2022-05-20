@@ -140,12 +140,12 @@ class YahooFinanceInterface:
         d0straddles = self.map_toStraddleArray(pyson)
         allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
 
-        for dateint in expDates[1:]:
-            html = self.get_day_html(dateint)
-            if html is not None:
-                pyson = self.get_options_json_from_html(html, dateint)
-                straddles = self.map_toStraddleArray(pyson)
-                allStraddles.append(models.DaysOptions(dateint, straddles))
+        # for dateint in expDates[1:]:
+        #     html = self.get_day_html(dateint)
+        #     if html is not None:
+        #         pyson = self.get_options_json_from_html(html, dateint)
+        #         straddles = self.map_toStraddleArray(pyson)
+        #         allStraddles.append(models.DaysOptions(dateint, straddles))
 
         return allStraddles
 
