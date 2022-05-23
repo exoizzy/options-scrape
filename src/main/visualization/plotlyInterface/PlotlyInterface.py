@@ -2,10 +2,20 @@ import plotly.graph_objects as go
 
 class PlotlyInterface:
     barmode = ['relative', 'stack', 'group', 'overlay']
-    baropacity = 0.75
+    ticklabelpos = ['outside', 'inside', 'outside top', 'inside top', 'outside left', 'inside left', 'outside right',
+                    'inside right', 'outside bottom', 'inside bottom']
+    baropacity = 0.5
     orientation = 'h'
+    legend = dict(
+        orientation=orientation,
+        yanchor='bottom',
+        y=1,
+        xanchor='left',
+        x=0
+    )
+    sideright = dict(side='right')
     linewidth = 2
-    showgrid=dict(showgrid=True)
+    showgrid = dict(showgrid=True)
     red = 'firebrick'
     blue = 'royalblue'
     fig = None
@@ -37,13 +47,18 @@ class PlotlyInterface:
         )
 
     def showGraph(self):
+
+        ax = {}
+        ax.update(self.showgrid)
+        ax.update(self.sideright)
         self.fig.update_layout(
             title=self.title,
+            legend=self.legend,
             xaxis_title=self.xaxTitle,
             yaxis_title=self.yaxTitle,
-            barmode=self.barmode[0],
+            barmode=self.barmode[3],
             xaxis=self.showgrid,
-            yaxis=self.showgrid
+            yaxis=ax
         )
 
         self.fig.show()

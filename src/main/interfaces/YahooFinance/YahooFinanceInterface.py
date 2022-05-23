@@ -95,6 +95,7 @@ class YahooFinanceInterface:
         lStraddles = []
 
         for strad in straddles:
+            callerrFlag = False
             call = None
             callexp = None
             try:
@@ -111,6 +112,7 @@ class YahooFinanceInterface:
                                      callprice, copdt)
             except KeyError as ke:
                 print(f'call key error: {ke}')
+                callerrFlag = True
 
             put = None
             try:
@@ -125,12 +127,16 @@ class YahooFinanceInterface:
                 putexp = strad[f'put{self.exp}'][self.raw]
                 put = models.Option(putticker, self.ticker, putexp, 'p', putstrike, putvol, putoi, putiv, putprice,
                                     popdt)
+                if callerrFlag:
+                    call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, putexp)
             except KeyError as ke:
                 print(f'put key error: {ke}')
+                if not callerrFlag:
+                    put = models.Option(None, self.ticker, callexp, 'p', callstrike, 0, 0, 0, 0, copdt)
 
-            lStraddle = models.Straddle(strad['strike'][self.raw], callexp, call, put)
-
-            lStraddles.append(lStraddle)
+            if not callerrFlag and put is not None:
+                lStraddle = models.Straddle(strad['strike'][self.raw], callexp, call, put)
+                lStraddles.append(lStraddle)
 
         return lStraddles
 

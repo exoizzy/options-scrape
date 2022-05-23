@@ -31,14 +31,37 @@ def main():
 
         rel = StonkToRelative.daysOptionsToRelative(ftstonk.options[0], ftstonk.lastOpen)
 
-        pli = PlotlyInterface(ftstonk.ticker, title, xaxTitle, yaxTitle)
+        # pli = PlotlyInterface(ftstonk.ticker, title, xaxTitle, yaxTitle)
 
-        pli.addLine(list(rel.callVol.values()), list(rel.callVol.keys()), pli.red, 'callVol')
-        pli.addLine(list(rel.putVol.values()), list(rel.putVol.keys()), pli.blue, 'putVol')
-        pli.addBar(list(rel.callOI.values()), list(rel.callOI.keys()), pli.red, 'callOI')
-        pli.addBar(list(rel.putOI.values()), list(rel.putOI.keys()), pli.blue, 'putOI')
+        cvx = list(rel.callVol.values())
+        cvy = list(rel.callVol.keys())
+        pvx = list(rel.putVol.values())
+        pvy = list(rel.putVol.keys())
+        cox = list(rel.callOI.values())
+        coy = list(rel.callOI.keys())
+        pox = list(rel.putOI.values())
+        poy = list(rel.putOI.keys())
 
-        pli.showGraph()
+        print( f'len cvx: {len(cox)}, len cvy: {len(coy)}')
+        print( f'len pox: {len(pox)}, len poy: {len(poy)}')
+
+        # ncvx = smoothOI(cox, coy)
+        # print(ncvx)
+        #
+        # pli.addLine(cvx, cvy, pli.red, 'callVol')
+        # pli.addLine(pvx, pvy, pli.blue, 'putVol')
+        # pli.addBar(cox, coy, pli.red, 'callOI')
+        # pli.addBar(pox, poy, pli.blue, 'putOI')
+        #
+        # pli.showGraph()
+
+def smoothOI(x, y):
+    sf = 4
+    n = len(x)
+    n = n//4
+
+
+
 
 if __name__ == '__main__':
     main()
