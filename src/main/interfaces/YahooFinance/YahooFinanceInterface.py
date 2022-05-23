@@ -128,7 +128,7 @@ class YahooFinanceInterface:
                 put = models.Option(putticker, self.ticker, putexp, 'p', putstrike, putvol, putoi, putiv, putprice,
                                     popdt)
                 if callerrFlag:
-                    call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, putexp)
+                    call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, popdt)
             except KeyError as ke:
                 print(f'put key error: {ke}')
                 if not callerrFlag:
@@ -146,7 +146,7 @@ class YahooFinanceInterface:
         d0straddles = self.map_toStraddleArray(pyson)
         allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
 
-        # TODO: remove this to allow pulling data for all available exp dates
+        # TODO: comment this out to get only todays options data, uncomment for all available data
         # for dateint in expDates[1:]:
         #     html = self.get_day_html(dateint)
         #     if html is not None:

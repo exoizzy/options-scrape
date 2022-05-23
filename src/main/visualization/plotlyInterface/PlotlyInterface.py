@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+from models.RelativeModels import RelativeCoordinates
 
 class PlotlyInterface:
     barmode = ['relative', 'stack', 'group', 'overlay']
@@ -34,6 +35,17 @@ class PlotlyInterface:
             )
         )
 
+    def addNextLine(self, xar, yar, color, name):
+        self.fig.add_trace(
+            go.Scatter(
+                x=xar,
+                y=yar,
+                name=name,
+                line=dict(color=color, width=self.linewidth),
+                base=1
+            )
+        )
+
     def addBar(self, xarr, yarr, color, name):
         self.fig.add_trace(
             go.Bar(
@@ -46,8 +58,24 @@ class PlotlyInterface:
             )
         )
 
-    def showGraph(self):
+    def addNextBar(self, xarr, yarr, color, name):
+        self.fig.add_trace(
+            go.Bar(
+                name=name,
+                x=xarr,
+                y=yarr,
+                orientation=self.orientation,
+                marker=dict(color=color),
+                opacity=self.baropacity,
+                base=1
+            )
+        )
 
+    def showGraph(self, curprice):
+        if self.orientation == 'v':
+            self.fig.add_vline(x=curprice)
+        elif self.orientation == 'h':
+            self.fig.add_hline(y=curprice)
         ax = {}
         ax.update(self.showgrid)
         ax.update(self.sideright)
