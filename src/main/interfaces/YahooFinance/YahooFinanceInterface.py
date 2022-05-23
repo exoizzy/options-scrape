@@ -140,6 +140,7 @@ class YahooFinanceInterface:
         d0straddles = self.map_toStraddleArray(pyson)
         allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
 
+        # TODO: remove this to allow pulling data for all available exp dates
         # for dateint in expDates[1:]:
         #     html = self.get_day_html(dateint)
         #     if html is not None:

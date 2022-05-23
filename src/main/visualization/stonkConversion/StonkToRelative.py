@@ -69,4 +69,4 @@ def relativeDeltaToMin(timed: datetime.timedelta):
 
 def relativeX(rabArr, maxB, te):
     for i in rabArr.keys():
-        rabArr[i] = (rabArr[i]/maxB)*(-te)
+        rabArr[i] = (rabArr[i]/maxB)*(te)
