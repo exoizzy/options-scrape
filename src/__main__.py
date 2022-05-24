@@ -36,8 +36,6 @@ def main():
 
         plotRelativeModel(rel, pli, ftstonk.currentPrice, 'v')
 
-        pli.showGraph(ftstonk.currentPrice)
-
 
 def plotRelativeModel(rel: RelativeCoordinates, pli: PlotlyInterface, cprice: float, ori):
     cvx = list(rel.callVol.values())
@@ -54,20 +52,22 @@ def plotRelativeModel(rel: RelativeCoordinates, pli: PlotlyInterface, cprice: fl
 
     if ori == 'v':
         pli.orientation = ori
-        pli.addLine(cvy, cvx, pli.red, 'callVol')
-        pli.addLine(pvy, pvx, pli.blue, 'putVol')
-        pli.addBar(coy, cox, pli.red, 'callOI')
-        pli.addBar(poy, pox, pli.blue, 'putOI')
+        pli.addLine(cvy, cvx, pli.red, 'callVol', 0)
+        pli.addLine(pvy, pvx, pli.blue, 'putVol', 0)
+        pli.addBar(coy, cox, pli.red, 'callOI', 0)
+        pli.addBar(poy, pox, pli.blue, 'putOI', 0)
 
-        pli.addNextBar(coy, cox, 'pink', 'testC')
-        pli.addNextBar(poy, pox, 'yellow', 'testP')
+        pli.addBar(coy, cox, pli.red, 'callVol', 1)
+        pli.addBar(poy, pox, pli.blue, 'putVol', 1)
+        pli.addLine(cvy, cvx, pli.red, 'callOI', 1)
+        pli.addLine(pvy, pvx, pli.blue, 'callOI', 1)
     elif ori == 'h':
-        pli.addLine(cvx, cvy, pli.red, 'callVol')
-        pli.addLine(pvx, pvy, pli.blue, 'putVol')
-        pli.addBar(cox, coy, pli.red, 'callOI')
-        pli.addBar(pox, poy, pli.blue, 'putOI')
+        pli.addLine(cvx, cvy, pli.red, 'callVol', 0)
+        pli.addLine(pvx, pvy, pli.blue, 'putVol', 0)
+        pli.addBar(cox, coy, pli.red, 'callOI', 0)
+        pli.addBar(pox, poy, pli.blue, 'putOI', 0)
 
-    # pli.showGraph(cprice)
+    pli.showGraph(cprice)
 
 
 if __name__ == '__main__':
