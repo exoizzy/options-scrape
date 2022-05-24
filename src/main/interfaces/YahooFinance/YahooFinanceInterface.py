@@ -82,7 +82,6 @@ class YahooFinanceInterface:
             FileUtility.saveJsonFile(jsonObj, self.interfaceName, f'{self.fileName}{datestr}_rawOptionsJson')
             return jsonObj
         print('Options data could not be found\n')
-        # should probably dump the soup.text to a file here to debug
         FileUtility.saveHtmlFile(soup.text, self.interfaceName, f'{self.fileName}_ERROR-OPTIONS-DATA-NOT-FOUND')
         return appMain
 
@@ -90,6 +89,8 @@ class YahooFinanceInterface:
         return optionsStorePyson['meta']['expirationDates']
 
     def map_toStraddleArray(self, optionsStorePyson: json):
+        ce = 0
+        pe = 0
         contracts = optionsStorePyson['contracts']
         straddles = contracts['straddles']
         lStraddles = []
@@ -111,7 +112,7 @@ class YahooFinanceInterface:
                 call = models.Option(callticker, self.ticker, callexp, 'c', callstrike, callvol, calloi, calliv,
                                      callprice, copdt)
             except KeyError as ke:
-                print(f'call key error: {ke}')
+                ce = ce + 1
                 callerrFlag = True
 
             put = None
@@ -130,7 +131,7 @@ class YahooFinanceInterface:
                 if callerrFlag:
                     call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, popdt)
             except KeyError as ke:
-                print(f'put key error: {ke}')
+                pe = pe + 1
                 if not callerrFlag:
                     put = models.Option(None, self.ticker, callexp, 'p', callstrike, 0, 0, 0, 0, copdt)
 
@@ -138,6 +139,7 @@ class YahooFinanceInterface:
                 lStraddle = models.Straddle(strad['strike'][self.raw], callexp, call, put)
                 lStraddles.append(lStraddle)
 
+        print(f'call errors: {ce}, put errors: {pe}')
         return lStraddles
 
     def get_all_options_available(self, pyson, expDates):

@@ -53,8 +53,8 @@ def plotRelativeModel(rel: RelativeCoordinates, pli: PlotlyInterface, ori, offse
     pox = list(rel.putOI.values())
     poy = list(rel.putOI.keys())
 
-    print(f'len cvx: {len(cox)}, len cvy: {len(coy)}')
-    print(f'len pox: {len(pox)}, len poy: {len(poy)}')
+    # print(f'len cvx: {len(cox)}, len cvy: {len(coy)}')
+    # print(f'len pox: {len(pox)}, len poy: {len(poy)}')
 
     if ori == 'v':
         pli.orientation = ori
