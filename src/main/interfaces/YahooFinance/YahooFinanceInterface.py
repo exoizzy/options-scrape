@@ -44,7 +44,7 @@ class YahooFinanceInterface:
 
     def build_url(self, dateint: int = None):
         return self.url_base + self.ticker \
-               + self.url_options + (str(dateint) if dateint is not None else "") \
+               + self.url_options + ((self.url_date + str(dateint) + self.url_and) if dateint is not None else "") \
                + self.url_p + self.ticker + self.url_straddle_true
 
     def get_day_html(self, dateint: int = None):
@@ -52,7 +52,7 @@ class YahooFinanceInterface:
         try:
             r = requests.get(url, headers=self.headers)
             if r.status_code == 200:
-                print(f"html for url : {url} has been fetched successfully\n")
+                # print(f"html for url : {url} has been fetched successfully\n")
                 datestr = f'_{dateint}' if dateint is not None else ""
                 FileUtility.saveHtmlFile(r.text, self.interfaceName, f'{self.fileName}{datestr}_rawHtmlScrape')
                 return BeautifulSoup(r.text, 'html.parser')
@@ -64,7 +64,7 @@ class YahooFinanceInterface:
     def get_options_json_from_html(self, soup: BeautifulSoup, dateint: int = None):
         print("Grabbing options data from html...\n")
         scripts = soup.find_all(name='script')
-        appMain = None
+        appMain = ''
         for scr in scripts:
             if 'root.App.main' in scr.text:
                 appMain = scr.text
@@ -147,19 +147,19 @@ class YahooFinanceInterface:
         allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
 
         # TODO: comment this out to get only todays options data, uncomment for all available data
-        # for dateint in expDates[1:]:
-        #     html = self.get_day_html(dateint)
-        #     if html is not None:
-        #         pyson = self.get_options_json_from_html(html, dateint)
-        #         straddles = self.map_toStraddleArray(pyson)
-        #         allStraddles.append(models.DaysOptions(dateint, straddles))
+        for dateint in expDates[1:]:
+            html = self.get_day_html(dateint)
+            if html is not None:
+                pyson = self.get_options_json_from_html(html, dateint)
+                straddles = self.map_toStraddleArray(pyson)
+                allStraddles.append(models.DaysOptions(dateint, straddles))
 
         return allStraddles
 
     def get_stonk(self):
         html = self.get_day_html()
         if html is not None:
-            pyson = self.get_options_json_from_html(html)
+            pyson: dict = self.get_options_json_from_html(html)
             quote = pyson['meta']['quote']
             currentPrice = quote['regularMarketPrice']
             lastopen = quote['regularMarketTime']
