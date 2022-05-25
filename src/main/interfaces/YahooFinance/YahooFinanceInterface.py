@@ -62,7 +62,7 @@ class YahooFinanceInterface:
             return None
 
     def get_options_json_from_html(self, soup: BeautifulSoup, dateint: int = None):
-        print("Grabbing options data from html...\n")
+        # print("Grabbing options data from html...\n")
         scripts = soup.find_all(name='script')
         appMain = ''
         for scr in scripts:
@@ -73,14 +73,17 @@ class YahooFinanceInterface:
             rootind = appMain.find(self.json_start)
             rootind += self.start_len
             rootend = appMain.find(self.json_end)
-            print('Options data found successfully\n')
+            # print('Options data found successfully\n')
             jsonstr = appMain[rootind:rootend]
             jsonObj = json.loads(jsonstr)
-            # remove all values not necessary for processing to reduce memory consumption/storage use
-            jsonObj = jsonObj['context']['dispatcher']['stores']['OptionContractsStore']
-            datestr = f'_{dateint}' if dateint is not None else ""
-            FileUtility.saveJsonFile(jsonObj, self.interfaceName, f'{self.fileName}{datestr}_rawOptionsJson')
-            return jsonObj
+            try:
+                # remove all values not necessary for processing to reduce memory consumption/storage use
+                jsonObj = jsonObj['context']['dispatcher']['stores']['OptionContractsStore']
+                datestr = f'_{dateint}' if dateint is not None else ""
+                FileUtility.saveJsonFile(jsonObj, self.interfaceName, f'{self.fileName}{datestr}_rawOptionsJson')
+                return jsonObj
+            except KeyError as ke:
+                print(f'KeyError: {ke} whil egetting options json for {dateint}')
         print('Options data could not be found\n')
         FileUtility.saveHtmlFile(soup.text, self.interfaceName, f'{self.fileName}_ERROR-OPTIONS-DATA-NOT-FOUND')
         return appMain
@@ -89,8 +92,8 @@ class YahooFinanceInterface:
         return optionsStorePyson['meta']['expirationDates']
 
     def map_toStraddleArray(self, optionsStorePyson: json):
-        ce = 0
-        pe = 0
+        # ce = 0
+        # pe = 0
         contracts = optionsStorePyson['contracts']
         straddles = contracts['straddles']
         lStraddles = []
@@ -112,7 +115,7 @@ class YahooFinanceInterface:
                 call = models.Option(callticker, self.ticker, callexp, 'c', callstrike, callvol, calloi, calliv,
                                      callprice, copdt)
             except KeyError as ke:
-                ce = ce + 1
+                # ce = ce + 1
                 callerrFlag = True
 
             put = None
@@ -131,7 +134,7 @@ class YahooFinanceInterface:
                 if callerrFlag:
                     call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, popdt)
             except KeyError as ke:
-                pe = pe + 1
+                # pe = pe + 1
                 if not callerrFlag:
                     put = models.Option(None, self.ticker, callexp, 'p', callstrike, 0, 0, 0, 0, copdt)
 
@@ -139,7 +142,7 @@ class YahooFinanceInterface:
                 lStraddle = models.Straddle(strad['strike'][self.raw], callexp, call, put)
                 lStraddles.append(lStraddle)
 
-        print(f'call errors: {ce}, put errors: {pe}')
+        # print(f'call errors: {ce}, put errors: {pe}')
         return lStraddles
 
     def get_all_options_available(self, pyson, expDates):
@@ -155,7 +158,8 @@ class YahooFinanceInterface:
                 pyson = self.get_options_json_from_html(html, dateint)
                 straddles = self.map_toStraddleArray(pyson)
                 allStraddles.append(models.DaysOptions(dateint, straddles))
-
+                print(f'{date.fromtimestamp(dateint)}, ', end=" ")
+        print("")
         return allStraddles
 
     def get_stonk(self):
@@ -166,6 +170,7 @@ class YahooFinanceInterface:
             currentPrice = quote['regularMarketPrice']
             lastopen = quote['regularMarketTime']
             expDates: [int] = self.get_future_dates(pyson)
+            print(f'options data aquired for {date.fromtimestamp(expDates[0])}, ', end=" ")
             options = self.get_all_options_available(pyson, expDates)
             stonk = models.Stonk(self.ticker, currentPrice, options, expDates, lastopen)
 

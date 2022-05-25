@@ -19,7 +19,7 @@ def main():
     title = f'{ticker} oi and vol graph'
     xaxTitle = 'vol && oi (value/max as % of time to expiry)'
     yaxTitle = 'strike price ($)'
-    fn = 'SPY_2022-05-24_test_stonk.json'
+    fn = 'SPY_2022-05-25_test_stonk.json'
 
     if False:
         yfi = YahooFinanceInterface(ticker)
