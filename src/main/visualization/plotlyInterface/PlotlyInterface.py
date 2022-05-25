@@ -102,7 +102,8 @@ class PlotlyInterface:
             yaxis_title=self.yaxTitle,
             barmode=self.barmode[3],
             xaxis=self.showgrid,
-            yaxis=ax
+            yaxis=ax,
+            showlegend=False
         )
 
         self.fig.show()

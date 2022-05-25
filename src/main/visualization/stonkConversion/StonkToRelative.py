@@ -37,6 +37,7 @@ def getOIandVolFromDaysOpt(dopt: DaysOptions):
         p: Option = strad.put
         strike: float = strad.strike
         if c is not None:
+            # TODO: refactor this to set it to 0 if its none
             coi.update(
                 {strike: c.oi} # (c.oi if (p is None or p.oi > c.oi) else c.oi - p.oi)}
             )
