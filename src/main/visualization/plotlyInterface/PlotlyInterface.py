@@ -6,7 +6,8 @@ class PlotlyInterface:
     barmode = ['relative', 'stack', 'group', 'overlay']
     ticklabelpos = ['outside', 'inside', 'outside top', 'inside top', 'outside left', 'inside left', 'outside right',
                     'inside right', 'outside bottom', 'inside bottom']
-    baropacity = 0.5
+    baropacity = 0.75
+    lineopacity = 0.5
     orientation = 'h'
     legend = dict(
         orientation=orientation,
@@ -16,7 +17,7 @@ class PlotlyInterface:
         x=0
     )
     sideright = dict(side='right')
-    linewidth = 2
+    linewidth = 1
     showgrid = dict(showgrid=True)
     red = 'firebrick'
     blue = 'royalblue'
@@ -42,7 +43,8 @@ class PlotlyInterface:
                 x=xarr,
                 y=yarr,
                 name=name,
-                line=dict(color=color, width=self.linewidth)
+                line=dict(color=color, width=self.linewidth),
+                opacity=self.lineopacity
             )
         )
 

@@ -152,7 +152,7 @@ class YahooFinanceInterface:
         allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
 
         # TODO: comment this out to get only todays options data, uncomment for all available data
-        for dateint in expDates[1:]:
+        for dateint in expDates[1:5]:
             html = self.get_day_html(dateint)
             if html is not None:
                 pyson = self.get_options_json_from_html(html, dateint)

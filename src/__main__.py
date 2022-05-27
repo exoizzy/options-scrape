@@ -19,9 +19,10 @@ def main():
     title = f'{ticker} oi and vol graph'
     xaxTitle = 'vol && oi (value/max as % of time to expiry)'
     yaxTitle = 'strike price ($)'
-    fn = 'SPY_2022-05-25_test_stonk.json'
+    fn = 'SPY_2022-05-27_test_stonk.json'
+    gfn = f''
 
-    if False:
+    if True:
         yfi = YahooFinanceInterface(ticker)
         stonk = yfi.get_stonk()
         if stonk is not None:
@@ -29,12 +30,14 @@ def main():
         else:
             print('stonk is none :( \n')
 
+            # todo: need to figure out a way to not create an oi bar if the value is 0 for both.
+
     if fn is not None:
         ftstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, fn)
         pli = PlotlyInterface(ftstonk.ticker, title, xaxTitle, yaxTitle)
 
         plotStonk(ftstonk, pli, 'h')
-
+        FileUtility.saveGraphHtml(pli.fig.to_html(), ticker, f'test-save')
 
 def plotStonk(stonk: Stonk, pli: PlotlyInterface, orientation: str):
     tickArr = []
@@ -74,10 +77,10 @@ def plotRelativeModel(rel: RelativeCoordinates, pli: PlotlyInterface, ori, offse
 
     if ori == 'v':
         pli.orientation = ori
-        pli.addLine(cvy, cvx, pli.red, 'callVol', offset)
-        pli.addLine(pvy, pvx, pli.blue, 'putVol', offset)
         pli.addBar(coy, cox, pli.red, 'callOI', offset)
         pli.addBar(poy, pox, pli.blue, 'putOI', offset)
+        pli.addLine(cvy, cvx, pli.red, 'callVol', offset)
+        pli.addLine(pvy, pvx, pli.blue, 'putVol', offset)
 
     elif ori == 'h':
         pli.addLine(cvx, cvy, pli.red, 'callVol', offset)

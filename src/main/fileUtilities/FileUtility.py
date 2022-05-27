@@ -1,7 +1,7 @@
 import src.res
 import json
 import os
-from datetime import date
+from datetime import date, datetime
 from models.Stonk import StonkEncoder
 from models.Stonk import Stonk
 from types import SimpleNamespace
@@ -9,6 +9,7 @@ from types import SimpleNamespace
 resFP = os.path.dirname(src.res.__file__)
 resdir = os.listdir(resFP)
 html = 'html-files'
+graph = 'graphs'
 interJson = 'interface-json-files'
 localJson = 'local-json-files'
 temp = 'temp'
@@ -62,6 +63,29 @@ def saveHtmlFile(htmlObj, interfaceName, filename) -> str:
         return f'{filename}.html'
     except Exception as e:
         print(f'unable to create or write to HTML FILE {filepath}, error: {e}')
+    return ''
+
+
+def saveGraphHtml(htmlText, ticker, filename) -> str:
+    opentype = 'w'
+    filepath = os.path.join(resFP, graph)
+    filepath = os.path.join(filepath, ticker)
+
+    try:
+        # make sure that the dir structure exists
+        if not os.path.exists(filepath):
+            os.makedirs(filepath)
+
+        t = datetime.utcnow()
+        fnstr = f'{ticker}-{date.today()}-{t.hour}-{t.minute}-{filename}.html'
+        filepath = os.path.join(filepath, fnstr)
+        # opentype 'w' already clears the file when it is opened.
+        with open(filepath, opentype) as f:
+            json.dump(htmlText, f)
+            f.close()
+        return fnstr
+    except Exception as e:
+        print(f'unable to create or write GRAPH to HTML FILE {filepath}, error: {e}')
     return ''
 
 
