@@ -1,5 +1,7 @@
 import requests
+from datetime import datetime
 from datetime import date
+from datetime import timezone
 import json
 from fileUtilities import FileUtility
 from bs4 import BeautifulSoup
@@ -55,7 +57,7 @@ class YahooFinanceInterface:
     ticker: str = 'SPY'
     expiryRange = None
 
-    def __init__(self, ticker, expRange=None):
+    def __init__(self, ticker, expRange=5):
         print(f"Yahoo Finance interface loaded for ticker: {ticker}\n")
         self.ticker = ticker
         self.fileName = f'{interfaceName}_{date.today()}_{self.ticker}'
@@ -113,9 +115,9 @@ class YahooFinanceInterface:
             optConStore = self.get_options_json_from_html(html, dateint)
             return optConStore
 
-    def get_options_from_day(self, contracts) -> []:
+    def get_options_from_day(self, contr) -> []:
         optionsArr = []
-        yfinStrad = contracts[straddles]
+        yfinStrad = contr[straddles]
 
         for strad in yfinStrad:
             for opt in [call, put]:
@@ -137,12 +139,13 @@ class YahooFinanceInterface:
 
         return optionsArr
 
-    def get_all_options(self, contracts, expDates) -> []:
-        optionsArr = self.get_options_from_day(contracts)
-
-        for dateint in expDates:
+    def get_all_options(self, contr, expDates) -> []:
+        optionsArr = self.get_options_from_day(contr)
+        print(f'options data gathered for date(s): {datetime.fromtimestamp(expDates[0], tz=timezone.utc)}, ', end='')
+        for dateint in expDates[1:self.expiryRange]:
             optJson = self.get_options_json(dateint)[contracts]
             optionsArr.extend(self.get_options_from_day(optJson))
+            print(f'{datetime.fromtimestamp(dateint, tz=timezone.utc)}, ', end='')
 
         return optionsArr
 
@@ -171,4 +174,5 @@ class YahooFinanceInterface:
             stonk.expDates = expDates
             stonk.strikes = yfinStrikes
             stonk.options = self.get_all_options(optConStore[contracts], expDates)
+            stonk.calcMaxOIAndVol()
             return stonk

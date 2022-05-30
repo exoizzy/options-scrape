@@ -27,7 +27,7 @@ class Stonk:
             cpy.options.append(o.__copy__())
         return cpy
 
-    def getAllOIAndVol(self):
+    def _getAllRawOIAndVol(self):
         oi, vol = [], []
 
         for opt in self.options:
@@ -39,13 +39,18 @@ class Stonk:
 
     def calcMaxOIAndVol(self):
         if len(self.options) != 0:
-            oi, vol = self.getAllOIAndVol()
+            oi, vol = self._getAllRawOIAndVol()
             self.maxOI = max(oi)
             self.maxVol = max(vol)
 
     def toRelative(self):
-        if self.maxVol is not None and self.maxOI is not None:
-            pass
+        if self.options is not None:
+            if self.maxVol is None or self.maxOI is None:
+                self.calcMaxOIAndVol()
+
+            for opt in self.options:
+                opt: Option = opt
+                opt.toRelative(self.maxOI, self.maxVol)
 
 
 class StonkEncoder(JSONEncoder):
