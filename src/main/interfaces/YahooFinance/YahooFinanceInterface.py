@@ -5,56 +5,75 @@ from fileUtilities import FileUtility
 from bs4 import BeautifulSoup
 import models
 
+# interface support values
+interfaceName = 'YahooFinanceInterface'
+headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) '
+                         'Chrome/39.0.2171.95 Safari/537.36'}
+
+url_base = "https://finance.yahoo.com/quote/"
+url_options = "/options?"
+url_p = "p="
+url_date = "date="
+url_and = "&"
+url_straddle_true = "&straddle=true"
+
+json_start = 'root.App.main ='
+start_len = len(json_start)
+json_end = ';\n}(this));'
+
+# yfin options json values
+call = 'call'
+put = 'put'
+strike = '.strike'
+price = '.lastPrice'
+oi = '.openInterest'
+iv = '.impliedVolatility'
+contTicker = '.contractSymbol'
+exp = '.expiration'
+vol = '.volume'
+bid = '.bid'
+ask = '.ask'
+raw = 'raw'
+fmt = 'fmt'
+# yfin json values
+meta = 'meta'
+expirationDates = 'expirationDates'
+quote = 'quote'
+regMktTime = 'regularMarketTime'
+regMktPrice = 'regularMarketPrice'
+yrHigh = 'fiftyTwoWeekHigh'
+yrLow = 'fiftyTwoWeekLow'
+dayHigh = 'regularMarketDayHigh'
+dayLow = 'regularMarketDayLow'
+strikes = 'strikes'
+contracts = 'contracts'
+straddles = 'straddles'
+
 
 class YahooFinanceInterface:
-    interfaceName = 'YahooFinanceInterface'
     fileName = ''
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) '
-                             'Chrome/39.0.2171.95 Safari/537.36'}
-
-    url_base = "https://finance.yahoo.com/quote/"
-    url_options = "/options?"
-    url_p = "p="
-    url_date = "date="
-    url_and = "&"
-    url_straddle_true = "&straddle=true"
-
-    json_start = 'root.App.main ='
-    start_len = len(json_start)
-    json_end = ';\n}(this));'
-
     ticker: str = 'SPY'
+    expiryRange = None
 
-    # yfin json values
-    strike = '.strike'
-    price = '.lastPrice'
-    oi = '.openInterest'
-    iv = '.impliedVolatility'
-    contTicker = '.contractSymbol'
-    exp = '.expiration'
-    vol = '.volume'
-    raw = 'raw'
-    fmt = 'fmt'
-
-    def __init__(self, ticker):
-        self.interfaceName = self.__class__.__name__
+    def __init__(self, ticker, expRange=None):
         print(f"Yahoo Finance interface loaded for ticker: {ticker}\n")
         self.ticker = ticker
-        self.fileName = f'{self.interfaceName}_{date.today()}_{self.ticker}'
+        self.fileName = f'{interfaceName}_{date.today()}_{self.ticker}'
+        self.expiryRange = expRange
 
     def build_url(self, dateint: int = None):
-        return self.url_base + self.ticker \
-               + self.url_options + ((self.url_date + str(dateint) + self.url_and) if dateint is not None else "") \
-               + self.url_p + self.ticker + self.url_straddle_true
+        return url_base + self.ticker \
+               + url_options + ((url_date + str(dateint) + url_and) if dateint is not None else "") \
+               + url_p + self.ticker + url_straddle_true
 
     def get_day_html(self, dateint: int = None):
         url = self.build_url(dateint)
         try:
-            r = requests.get(url, headers=self.headers)
+            r = requests.get(url, headers=headers)
             if r.status_code == 200:
                 # print(f"html for url : {url} has been fetched successfully\n")
                 datestr = f'_{dateint}' if dateint is not None else ""
-                FileUtility.saveHtmlFile(r.text, self.interfaceName, f'{self.fileName}{datestr}_rawHtmlScrape')
+                FileUtility.saveHtmlFile(r.text, interfaceName, f'{self.fileName}{datestr}_rawHtmlScrape')
                 return BeautifulSoup(r.text, 'html.parser')
             print(f"Failed to get html for url : {url}\n returned status code: {r.status_code} - {r.text}\n\n")
         except Exception as e:
@@ -70,9 +89,9 @@ class YahooFinanceInterface:
                 appMain = scr.text
 
         if appMain != '':
-            rootind = appMain.find(self.json_start)
-            rootind += self.start_len
-            rootend = appMain.find(self.json_end)
+            rootind = appMain.find(json_start)
+            rootind += start_len
+            rootend = appMain.find(json_end)
             # print('Options data found successfully\n')
             jsonstr = appMain[rootind:rootend]
             jsonObj = json.loads(jsonstr)
@@ -80,100 +99,77 @@ class YahooFinanceInterface:
                 # remove all values not necessary for processing to reduce memory consumption/storage use
                 jsonObj = jsonObj['context']['dispatcher']['stores']['OptionContractsStore']
                 datestr = f'_{dateint}' if dateint is not None else ""
-                FileUtility.saveJsonFile(jsonObj, self.interfaceName, f'{self.fileName}{datestr}_rawOptionsJson')
+                FileUtility.saveJsonFile(jsonObj, interfaceName, f'{self.fileName}{datestr}_rawOptionsJson')
                 return jsonObj
             except KeyError as ke:
-                print(f'KeyError: {ke} whil egetting options json for {dateint}')
+                print(f'KeyError: {ke} while getting options json for {dateint}')
         print('Options data could not be found\n')
-        FileUtility.saveHtmlFile(soup.text, self.interfaceName, f'{self.fileName}_ERROR-OPTIONS-DATA-NOT-FOUND')
-        return appMain
+        FileUtility.saveHtmlFile(soup.text, interfaceName, f'{self.fileName}_ERROR-OPTIONS-DATA-NOT-FOUND')
+        return {}
 
-    def get_future_dates(self, optionsStorePyson) -> []:
-        return optionsStorePyson['meta']['expirationDates']
+    def get_options_json(self, dateint=None):
+        html = self.get_day_html(dateint)
+        if html is not None:
+            optConStore = self.get_options_json_from_html(html, dateint)
+            return optConStore
 
-    def map_toStraddleArray(self, optionsStorePyson: json):
-        # ce = 0
-        # pe = 0
-        contracts = optionsStorePyson['contracts']
-        straddles = contracts['straddles']
-        lStraddles = []
+    def get_options_from_day(self, contracts) -> []:
+        optionsArr = []
+        yfinStrad = contracts[straddles]
 
-        for strad in straddles:
-            callerrFlag = False
-            call = None
-            callexp = None
-            try:
-                callstrike = strad[f'call{self.strike}'][self.raw]
-                callprice = strad[f'call{self.price}'][self.raw]
-                calloi = strad[f'call{self.oi}'][self.raw]
-                calliv = strad[f'call{self.iv}'][self.raw]
-                callvol = strad[f'call{self.vol}'][self.raw]
-                callticker = strad[f'call{self.contTicker}']
-                cdate = strad[f'call{self.exp}'][self.fmt]
-                copdt = models.OptDate(int(cdate[:4]), int(cdate[5:7]), int(cdate[8:]))
-                callexp = strad[f'call{self.exp}'][self.raw]
-                call = models.Option(callticker, self.ticker, callexp, 'c', callstrike, callvol, calloi, calliv,
-                                     callprice, copdt)
-            except KeyError as ke:
-                # ce = ce + 1
-                callerrFlag = True
+        for strad in yfinStrad:
+            for opt in [call, put]:
+                try:
+                    strk = strad[opt + strike][raw]
+                    pr = strad[opt + price][raw]
+                    intr = strad[opt + oi][raw]
+                    impl = strad[opt + iv][raw]
+                    volu = strad[opt + vol][raw]
+                    expir = strad[opt + exp][raw]
+                    b = strad[opt + bid][raw] if opt + bid in strad else None
+                    a = strad[opt + ask][raw] if opt + bid in strad else None
+                    tick = strad[opt + contTicker]
+                    option = models.Option(tick, strk, expir, intr, volu, impl, opt[0], self.ticker, pr, b, a)
+                    optionsArr.append(option)
+                except KeyError as ke:
+                    # we dont really need to do anything here, no data available for the contract
+                    pass
 
-            put = None
-            try:
-                putstrike = strad[f'put{self.strike}'][self.raw]
-                putprice = strad[f'put{self.price}'][self.raw]
-                putoi = strad[f'put{self.oi}'][self.raw]
-                putiv = strad[f'put{self.iv}'][self.raw]
-                putticker = strad[f'put{self.contTicker}']
-                putvol = strad[f'put{self.vol}'][self.raw]
-                pdate = strad[f'put{self.exp}'][self.fmt]
-                popdt = models.OptDate(int(pdate[:4]), int(pdate[5:7]), int(pdate[8:]))
-                putexp = strad[f'put{self.exp}'][self.raw]
-                put = models.Option(putticker, self.ticker, putexp, 'p', putstrike, putvol, putoi, putiv, putprice,
-                                    popdt)
-                if callerrFlag:
-                    call = models.Option(None, self.ticker, putexp, 'c', putstrike, 0, 0, 0, 0, popdt)
-            except KeyError as ke:
-                # pe = pe + 1
-                if not callerrFlag:
-                    put = models.Option(None, self.ticker, callexp, 'p', callstrike, 0, 0, 0, 0, copdt)
+        return optionsArr
 
-            if not callerrFlag and put is not None:
-                lStraddle = models.Straddle(strad['strike'][self.raw], callexp, call, put)
-                lStraddles.append(lStraddle)
+    def get_all_options(self, contracts, expDates) -> []:
+        optionsArr = self.get_options_from_day(contracts)
 
-        # print(f'call errors: {ce}, put errors: {pe}')
-        return lStraddles
+        for dateint in expDates:
+            optJson = self.get_options_json(dateint)[contracts]
+            optionsArr.extend(self.get_options_from_day(optJson))
 
-    def get_all_options_available(self, pyson, expDates):
-        # assumes pyson contains the first available days options data (default yfin url)
-        # maybe want to datesarr.sort() here? idk i feel like that might cause issues but idfk
-        d0straddles = self.map_toStraddleArray(pyson)
-        allStraddles = [models.DaysOptions(expDates[0], d0straddles)]
-
-        # TODO: comment this out to get only todays options data, uncomment for all available data
-        for dateint in expDates[1:5]:
-            html = self.get_day_html(dateint)
-            if html is not None:
-                pyson = self.get_options_json_from_html(html, dateint)
-                straddles = self.map_toStraddleArray(pyson)
-                allStraddles.append(models.DaysOptions(dateint, straddles))
-                print(f'{date.fromtimestamp(dateint)}, ', end=" ")
-        print("")
-        return allStraddles
+        return optionsArr
 
     def get_stonk(self):
-        html = self.get_day_html()
-        if html is not None:
-            pyson: dict = self.get_options_json_from_html(html)
-            quote = pyson['meta']['quote']
-            currentPrice = quote['regularMarketPrice']
-            lastopen = quote['regularMarketTime']
-            expDates: [int] = self.get_future_dates(pyson)
-            print(f'options data aquired for {date.fromtimestamp(expDates[0])}, ', end=" ")
-            options = self.get_all_options_available(pyson, expDates)
-            stonk = models.Stonk(self.ticker, currentPrice, options, expDates, lastopen)
+        yhigh, ylow, dhigh, dlow = None, None, None, None
 
-            return stonk
+        optConStore: dict = self.get_options_json()
 
-        return None
+        if optConStore is not None and optConStore != {}:
+            yfinQuote = optConStore[meta][quote]
+            expDates = optConStore[meta][expirationDates]
+            yfinStrikes = optConStore[meta][strikes]
+
+            currentPrice = yfinQuote[regMktPrice]
+            lastOpen = yfinQuote[regMktTime]
+
+            try:
+                yhigh = yfinQuote[yrHigh]
+                ylow = yfinQuote[yrLow]
+                dhigh = yfinQuote[dayHigh]
+                dlow = yfinQuote[dayLow]
+            except KeyError as ke:
+                print(f'unable to populate {ke} for {self.ticker}')
+
+            stonk = models.Stonk(self.ticker, currentPrice, lastOpen, yhigh, ylow, dhigh, dlow)
+            stonk.expDates = expDates
+            stonk.strikes = yfinStrikes
+            stonk.options = self.get_all_options(optConStore[contracts], expDates)
+
+

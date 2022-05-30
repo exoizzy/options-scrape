@@ -15,14 +15,14 @@ from visualization.stonkConversion import StonkToRelative
 
 
 def main():
-    ticker = 'SPY'
+    ticker = 'CRM'
     title = f'{ticker} oi and vol graph'
     xaxTitle = 'vol && oi (value/max as % of time to expiry)'
     yaxTitle = 'strike price ($)'
-    fn = 'SPY_2022-05-27_test_stonk.json'
+    fn = 'CRM_2022-05-29_test_stonk.json'
     gfn = f''
 
-    if True:
+    if False:
         yfi = YahooFinanceInterface(ticker)
         stonk = yfi.get_stonk()
         if stonk is not None:
@@ -39,6 +39,7 @@ def main():
         plotStonk(ftstonk, pli, 'h')
         FileUtility.saveGraphHtml(pli.fig.to_html(), ticker, f'test-save')
 
+
 def plotStonk(stonk: Stonk, pli: PlotlyInterface, orientation: str):
     tickArr = []
     tickVals = []
@@ -48,9 +49,9 @@ def plotStonk(stonk: Stonk, pli: PlotlyInterface, orientation: str):
         tickVals.append(i)
         tickArr.append(str(datetime.date.fromtimestamp(relArr[i].expiry)))
         plotRelativeModel(relArr[i], pli, orientation, i)
-        mp = calcMaxPain(stonk.currentPrice, stonk.options[i])
-        if orientation == 'h':
-            pli.addBar([1], [mp], 'black', 'mp', i)
+        # mp = calcMaxPain(stonk.currentPrice, stonk.options[i])
+        # if orientation == 'h':
+        #     pli.addBar([1], [mp], 'black', 'mp', i)
 
     pli.fig.update_layout(
         xaxis=dict(
