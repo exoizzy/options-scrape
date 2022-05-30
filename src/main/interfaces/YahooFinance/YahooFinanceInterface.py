@@ -171,5 +171,4 @@ class YahooFinanceInterface:
             stonk.expDates = expDates
             stonk.strikes = yfinStrikes
             stonk.options = self.get_all_options(optConStore[contracts], expDates)
-
-
+            return stonk

@@ -10,21 +10,22 @@ class Stonk:
     maxOI: int
     maxVol: int
 
-    """
-    includes copy constructor by setting stnk=Stonk() object
-    otherwise all other values must be set
-    """
     def __init__(self, ticker: str = None, currentPrice: float = None, lastOpenDate: int = None, yrHigh: float = None, yrLow: float = None,
-                 dayHigh: float = None, dayLow: float = None, stnk=None):
-        if stnk is None:
-            self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
-                ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
-        else:
-            self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
-            stnk.ticker, stnk.currentPrice, stnk.lastOpenDate, stnk.yrHigh, stnk.yrLow, stnk.dayHigh, stnk.dayLow
+                 dayHigh: float = None, dayLow: float = None):
+        self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
+            ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
 
-            self.expDates, self.strikes, self.options, self.maxOI, self.maxVol = \
-            stnk.expDates, stnk.strikes, stnk.options.deepcopy(), stnk.maxOI, stnk.maxVol
+    def __copy__(self):
+        cpy = Stonk(self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow)
+        cpy.maxVol = self.maxVol
+        cpy.maxOI = self.maxOI
+        cpy.expDates = self.expDates.copy()
+        cpy.strikes = self.strikes.copy()
+        cpy.options = []
+        for o in self.options:
+            o: Option = o
+            cpy.options.append(o.__copy__())
+        return cpy
 
     def getAllOIAndVol(self):
         oi, vol = [], []
