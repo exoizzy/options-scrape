@@ -1,1 +1,2 @@
-from src import main, res
+from src import main
+from src import res

@@ -16,17 +16,15 @@ class Option:
                                                      opt.iv, opt.cop, opt.underlying, opt.contractPrice, opt.bid, \
                                                      opt.ask
 
+    def __copy__(self):
+        return Option(opt=self)
+
     def isCall(self):
         return self.cop == 'c'
 
     def isPut(self):
         return self.cop == 'p'
 
-    """
-    :returns copy of self with oi and vol set to their values relative to the input
-    """
     def toRelative(self, maxOI, maxVol):
-        rel = Option(opt=self)
-        rel.oi = rel.oi / maxOI
-        rel.vol = rel.vol / maxVol
-        return rel
+        self.oi = self.oi/maxOI
+        self.vol = self.vol/maxVol

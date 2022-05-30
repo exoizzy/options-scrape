@@ -1,4 +1,6 @@
-from Option import Option
+from json import JSONEncoder
+
+from models import Option
 
 
 class Stonk:
@@ -8,11 +10,21 @@ class Stonk:
     maxOI: int
     maxVol: int
 
-    def __init__(self, ticker: str, currentPrice: float, lastOpenDate: int, yrHigh: float = None, yrLow: float = None,
-                 dayHigh: float = None, dayLow: float = None):
-        # current price == yfin.regularMarketPrice
-        self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
-            ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
+    """
+    includes copy constructor by setting stnk=Stonk() object
+    otherwise all other values must be set
+    """
+    def __init__(self, ticker: str = None, currentPrice: float = None, lastOpenDate: int = None, yrHigh: float = None, yrLow: float = None,
+                 dayHigh: float = None, dayLow: float = None, stnk=None):
+        if stnk is None:
+            self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
+                ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
+        else:
+            self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
+            stnk.ticker, stnk.currentPrice, stnk.lastOpenDate, stnk.yrHigh, stnk.yrLow, stnk.dayHigh, stnk.dayLow
+
+            self.expDates, self.strikes, self.options, self.maxOI, self.maxVol = \
+            stnk.expDates, stnk.strikes, stnk.options.deepcopy(), stnk.maxOI, stnk.maxVol
 
     def getAllOIAndVol(self):
         oi, vol = [], []
@@ -29,3 +41,12 @@ class Stonk:
             oi, vol = self.getAllOIAndVol()
             self.maxOI = max(oi)
             self.maxVol = max(vol)
+
+    def toRelative(self):
+        if self.maxVol is not None and self.maxOI is not None:
+            pass
+
+
+class StonkEncoder(JSONEncoder):
+    def default(self, o):
+        return o.__dict__

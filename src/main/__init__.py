@@ -1,1 +1,4 @@
-from src.main import fileUtilities, interfaces, models, visualization
+import fileUtilities
+import interfaces
+import models
+import visualization
