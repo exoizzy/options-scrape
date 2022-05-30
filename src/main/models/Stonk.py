@@ -1,23 +1,14 @@
-from datetime import date
-from models import Straddle
-from json import JSONEncoder
+from Option import Option
 
 
 class Stonk:
-    ticker: str
-    currentPrice: float
-    options: {date: [Straddle]}
-    expDates: [date]
-    lastOpen: int
+    expDates: [int]
+    options: [Option]
+    maxOI: int
+    maxVol: int
 
-    def __init__(self, ticker, currentPrice, options, expDates, lastopen):
-        self.ticker = ticker
-        self.currentPrice = currentPrice
-        self.options = options
-        self.expDates = expDates
-        self.lastOpen = lastopen
+    def __init__(self, ticker, currentPrice, lastOpenDate, yrHigh=None, yrLow=None, dayHigh=None, dayLow=None):
+        # current price == yfin.regularMarketPrice
+        self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
+            ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
 
-
-class StonkEncoder(JSONEncoder):
-    def default(self, o):
-        return o.__dict__
