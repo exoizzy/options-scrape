@@ -1,10 +1,10 @@
+import models.Stonk
 import src.res
 import json
 import os
 from datetime import date, datetime
 from models.Stonk import StonkEncoder
 from models.Stonk import Stonk
-from types import SimpleNamespace
 
 resFP = os.path.dirname(src.res.__file__)
 resdir = os.listdir(resFP)
@@ -119,7 +119,8 @@ def importStonkFromJsonFile(ticker, filename):
         if os.path.exists(fp):
             print(f'importing stonk obj from {fp}')
             with open(fp, opentype) as f:
-                stonk = json.load(f, object_hook=lambda d: SimpleNamespace(**d))
+                stonkstr = json.load(f)
+                stonk = Stonk(**stonkstr)
                 f.close()
             return stonk
         else:

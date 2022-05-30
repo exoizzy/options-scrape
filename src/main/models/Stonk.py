@@ -3,17 +3,25 @@ from json import JSONEncoder
 from models import Option
 
 
-class Stonk:
+class Stonk():
     expDates: [int]
     strikes: [int]
     options: [Option]
     maxOI: int
     maxVol: int
 
-    def __init__(self, ticker: str = None, currentPrice: float = None, lastOpenDate: int = None, yrHigh: float = None, yrLow: float = None,
-                 dayHigh: float = None, dayLow: float = None):
-        self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow = \
-            ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow
+    def __init__(self, ticker: str = None, currentPrice: float = None, lastOpenDate: int = None, yrHigh: float = None,
+                 yrLow: float = None, dayHigh: float = None, dayLow: float = None, expDates=None, strikes=None,
+                 options=None, maxOI=None, maxVol=None, *args, **kwargs):
+        self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow, \
+        self.expDates, self.strikes, self.maxOI, self.maxVol= \
+            ticker, currentPrice, lastOpenDate, yrHigh, yrLow, dayHigh, dayLow, expDates, strikes, maxOI, maxVol
+
+        if options is not None:
+            self.options = []
+            for o in options:
+                self.options.append(Option(o))
+
 
     def __copy__(self):
         cpy = Stonk(self.ticker, self.currentPrice, self.lastOpenDate, self.yrHigh, self.yrLow, self.dayHigh, self.dayLow)

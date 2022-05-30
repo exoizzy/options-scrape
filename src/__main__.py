@@ -2,7 +2,7 @@ import datetime
 
 from fileUtilities import FileUtility
 from interfaces.YahooFinance import YahooFinanceInterface
-from models import Stonk
+from models import Stonk, Option
 from models.RelativeModels import RelativeCoordinates
 from visualization.plotlyInterface import PlotlyInterface
 
@@ -25,36 +25,38 @@ def main():
             # todo: need to figure out a way to not create an oi bar if the value is 0 for both.
 
     if fn is not None:
-        ftstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, fn)
+        readstonk: Stonk = FileUtility.importStonkFromJsonFile(ticker, fn)
+        stonkcpy: Stonk = readstonk.__copy__()
+
+        stonkcpy.toRelative()
+
+        plotStonk(stonkcpy, PlotlyInterface(ticker, title, xaxTitle, yaxTitle), 'h')
 
 
-        pli = PlotlyInterface(ftstonk.ticker, title, xaxTitle, yaxTitle)
+def plotStonk(stonk: Stonk, pli: PlotlyInterface, orientation: str):
 
-        plotStonk(ftstonk, pli, 'h')
-        FileUtility.saveGraphHtml(pli.fig.to_html(), ticker, f'test-save')
+    poi = []
+    coi = []
+    pvol = []
+    cvol = []
 
+    dt = stonk.expDates[0]
 
-# def plotStonk(stonk: Stonk, pli: PlotlyInterface, orientation: str):
-#     tickArr = []
-#     tickVals = []
-#     relArr = StonkToRelative.stonkToRelative(stonk)
-#
-#     for i in range(0, len(relArr)):
-#         tickVals.append(i)
-#         tickArr.append(str(datetime.date.fromtimestamp(relArr[i].expiry)))
-#         plotRelativeModel(relArr[i], pli, orientation, i)
-#         # mp = calcMaxPain(stonk.currentPrice, stonk.options[i])
-#         # if orientation == 'h':
-#         #     pli.addBar([1], [mp], 'black', 'mp', i)
-#
-#     pli.fig.update_layout(
-#         xaxis=dict(
-#             tickmode='array',
-#             tickvals=tickVals,
-#             ticktext=tickArr
-#         )
-#     )
-#     pli.showGraph(stonk.currentPrice)
+    for o in stonk.options:
+        o: Option = o
+        if o.expDate == dt:
+            oi, vol = (poi, pvol) if o.cop == 'p' else (coi, cvol)
+            oi.append(o.oi)
+            vol.append(o.vol)
+
+    if orientation == 'v':
+        pli.orientation = orientation
+        pli.addBar([0] * len(poi), poi, pli.blue, 'put oi', 0)
+        pli.addBar([0] * len(coi), coi, pli.red, 'call oi', 0)
+        pli.addLine([0] * len(pvol), pvol, pli.blue, 'put vol', 0)
+        pli.addLine([0] * len(cvol), cvol, pli.red, 'call vol', 0)
+
+    pli.showGraph(stonk.currentPrice)
 
 
 # def plotRelativeModel(rel: RelativeCoordinates, pli: PlotlyInterface, ori, offset):
